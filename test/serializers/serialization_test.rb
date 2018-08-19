@@ -50,6 +50,20 @@ module ActiveModel
         assert_equal @serializable.serializable_hash, @serializer_instance.to_hash
         assert_equal @expected_hash, @serializer_instance.to_hash
       end
+
+      test 'ActiveSupport::Configurable#config method leaks into ActiveModel::Serializer' do
+        class MySerializer < ActiveModel::Serializer
+          attributes :name, :config
+        end
+
+        class PoroClass < ActiveModelSerializers::Model
+          attributes :name, :config
+        end
+
+        serializable = MySerializer.new PoroClass.new(name: 'Foo', config: 'LeConfig')
+
+        assert_equal({name: 'Foo', config: 'LeConfig'}, serializable.serializable_hash)
+      end
     end
   end
 end
